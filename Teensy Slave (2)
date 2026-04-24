@@ -2,6 +2,22 @@
 #include <Servo.h>
 #define SLAVE_ADDR 0x08
 
+// ============ 限位器设置 (Servo Angle Limits) ============
+// 根据机械结构调整每个舵机的安全角度范围
+// Servo 0 - Left Joint
+#define SERVO_0_MIN  0
+#define SERVO_0_MAX  180
+// Servo 1 - Left Leg
+#define SERVO_1_MIN  0
+#define SERVO_1_MAX  180
+// Servo 2
+#define SERVO_2_MIN  0
+#define SERVO_2_MAX  180
+// Servo 3
+#define SERVO_3_MIN  0
+#define SERVO_3_MAX  180
+// =========================================================
+
 Servo servo_0;
 Servo servo_1;
 Servo servo_2;
@@ -57,6 +73,13 @@ void receiveEvent(int howMany){
 }
 
 
+// 限位函数：将角度限制在 [minVal, maxVal] 范围内
+int constrainAngle(int angle, int minVal, int maxVal) {
+  if (angle < minVal) return minVal;
+  if (angle > maxVal) return maxVal;
+  return angle;
+}
+
 void transform_to_adc(char* original){
   char buffer[32];
   strcpy(buffer, original);
@@ -69,6 +92,12 @@ void transform_to_adc(char* original){
   angle_2 = atoi(token);
   token = strtok(NULL, "/");
   angle_3 = atoi(token);
+
+  // 应用限位器 (Apply angle limits)
+  angle_0 = constrainAngle(angle_0, SERVO_0_MIN, SERVO_0_MAX);
+  angle_1 = constrainAngle(angle_1, SERVO_1_MIN, SERVO_1_MAX);
+  angle_2 = constrainAngle(angle_2, SERVO_2_MIN, SERVO_2_MAX);
+  angle_3 = constrainAngle(angle_3, SERVO_3_MIN, SERVO_3_MAX);
 
   Serial.println(angle_0);
   Serial.println(angle_1);
